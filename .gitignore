@@ -1,0 +1,22 @@
+# .gitignore moviepile
+
+cobertura.ser
+CodeNarcReport.html
+
+.classpath
+.project
+.settings
+/*.launch
+/*.tmproj
+
+.idea/*
+*.iml
+*.iws
+*.ipr
+
+stacktrace.log
+/test/reports
+/web-app/WEB-INF/classes
+/target
+
+*.war
