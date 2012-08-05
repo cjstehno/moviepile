@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-import com.stehno.moviepile.security.Role
-import com.stehno.moviepile.security.User
-import com.stehno.moviepile.security.UserRole
+package com.stehno.moviepile.domain
 
-class BootStrap {
+/**
+ * Represents a single location in a storage unit.
+ */
+class Storage {
 
-    def init = { servletContext ->
+    Integer index
 
-        def adminRole = new Role(authority: 'ROLE_ADMIN').save(flush: true)
-        new Role(authority: 'ROLE_USER').save(flush: true)
+    static belongsTo = [ unit:StorageUnit ]
+    static hasMany = [ movies:Movie ]
 
-        def testUser = new User(username: 'admin', enabled: true, password: 'admin')
-        testUser.save(flush: true)
-
-        UserRole.create testUser, adminRole, true
+    static constraints = {
+        index nullable:true, min:1
     }
 
-    def destroy = {
+    static transients = ['storageLabel']
+
+    String getStorageLabel(){
+        "${unit.name}-$index"
     }
 }

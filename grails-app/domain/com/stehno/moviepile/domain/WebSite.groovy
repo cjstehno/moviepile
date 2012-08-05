@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import com.stehno.moviepile.security.Role
-import com.stehno.moviepile.security.User
-import com.stehno.moviepile.security.UserRole
+package com.stehno.moviepile.domain
 
-class BootStrap {
+/**
+ * Created with IntelliJ IDEA.
+ * User: cjstehno
+ * Date: 8/2/12
+ * Time: 8:03 PM
+ * To change this template use File | Settings | File Templates.
+ */
+class WebSite {
 
-    def init = { servletContext ->
+    String label
+    String url
 
-        def adminRole = new Role(authority: 'ROLE_ADMIN').save(flush: true)
-        new Role(authority: 'ROLE_USER').save(flush: true)
-
-        def testUser = new User(username: 'admin', enabled: true, password: 'admin')
-        testUser.save(flush: true)
-
-        UserRole.create testUser, adminRole, true
-    }
-
-    def destroy = {
+    static constraints = {
+        label blank:false, size:2..25
+        url blank:false, url:true, size:7..100
     }
 }
+

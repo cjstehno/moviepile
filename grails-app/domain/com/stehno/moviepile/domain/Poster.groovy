@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-import com.stehno.moviepile.security.Role
-import com.stehno.moviepile.security.User
-import com.stehno.moviepile.security.UserRole
+package com.stehno.moviepile.domain
 
-class BootStrap {
+/**
+ * Domain object representation of a movie poster.
+ */
+class Poster {
 
-    def init = { servletContext ->
+    byte[] content
 
-        def adminRole = new Role(authority: 'ROLE_ADMIN').save(flush: true)
-        new Role(authority: 'ROLE_USER').save(flush: true)
-
-        def testUser = new User(username: 'admin', enabled: true, password: 'admin')
-        testUser.save(flush: true)
-
-        UserRole.create testUser, adminRole, true
-    }
-
-    def destroy = {
+    static constraints = {
+        content maxSize:1024000
     }
 }
