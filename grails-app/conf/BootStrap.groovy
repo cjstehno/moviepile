@@ -21,14 +21,15 @@ import com.stehno.moviepile.security.UserRole
 class BootStrap {
 
     def init = { servletContext ->
+        if( !User.findByUsername('admin') ){
+            def adminRole = new Role(authority: 'ROLE_ADMIN').save(flush: true)
+            new Role(authority: 'ROLE_USER').save(flush: true)
 
-        def adminRole = new Role(authority: 'ROLE_ADMIN').save(flush: true)
-        new Role(authority: 'ROLE_USER').save(flush: true)
+            def testUser = new User(username: 'admin', enabled: true, password: 'admin')
+            testUser.save(flush: true)
 
-        def testUser = new User(username: 'admin', enabled: true, password: 'admin')
-        testUser.save(flush: true)
-
-        UserRole.create testUser, adminRole, true
+            UserRole.create testUser, adminRole, true
+        }
     }
 
     def destroy = {

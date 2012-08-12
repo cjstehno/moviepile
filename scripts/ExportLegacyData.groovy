@@ -25,16 +25,22 @@ target(main: "Exports a legacy MyMdb database to an xml fileset.") {
 
     def db = Sql.newInstance( 'jdbc:h2:file:b:/Projects/moviepile/mymdb', 'sa', '', 'org.h2.Driver' )
 
-    def actorLookup = []
+    def actorLookup = [:]
     db.eachRow('select m.movie_id,a.first_name,a.middle_name,a.last_name from movie_actors m, actor a where a.id=m.actor_id'){ row->
-        actorLookup << [
+        def movieActors = actorLookup[row.movie_id]
+        if( !movieActors ){
+            movieActors = []
+            actorLookup[row.movie_id] = movieActors
+        }
+
+        movieActors << [
             movieId:  row.movie_id,
             firstName: row.first_name ?: '',
             middleName: row.middle_name ?: '',
             lastName: row.last_name ?: ''
         ]
     }
-    println "Loaded ${actorLookup.size()} actors..."
+    println "Loaded actors for ${actorLookup.size()} movies..."
 
     def genreLookup = []
     db.eachRow('select m.movie_id,g.name from movie_genres m, genre g where g.id=m.genre_id'){ row->
@@ -88,7 +94,7 @@ target(main: "Exports a legacy MyMdb database to an xml fileset.") {
                     }
                 }
                 actors {
-                    actorLookup.findAll { a-> a.movieId == row.id }?.each { a->
+                    actorLookup[row.id]?.each { a->
                         actor {
                             firstName(a.firstName)
                             middleName(a.middleName)
@@ -97,7 +103,7 @@ target(main: "Exports a legacy MyMdb database to an xml fileset.") {
                     }
                 }
                 posters {
-                    byte[] content = db.firstRow('select content from poster where id=?', [row.id])?.content
+                    byte[] content = db.firstRow('select content from poster where title=?', [row.title])?.content
                     if( content ){
                         poster( content.encodeBase64(true) )
                     }
@@ -106,6 +112,8 @@ target(main: "Exports a legacy MyMdb database to an xml fileset.") {
 
         }
         count++
+
+        println "Wrote [${row.id}] ${row.title}..."
     }
     println "Wrote $count movies."
 }

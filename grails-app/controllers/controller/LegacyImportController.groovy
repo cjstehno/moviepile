@@ -16,7 +16,6 @@
 
 package controller
 
-import com.stehno.moviepile.service.MovieStorageService
 import groovy.io.FileType
 import com.stehno.moviepile.domain.*
 
@@ -28,18 +27,11 @@ class LegacyImportController {
 
     private static final File importDir = new File('c:/Users/cjstehno/Desktop/legacy-mymdb')
 
-    MovieStorageService movieStorageService
-
     def executeImport(){
         def xml = new XmlSlurper()
 
         importDir.eachFile( FileType.FILES ){ File file->
             def movieXml = xml.parse(file)
-
-            def genres = []
-            movieXml.genres.children().each { gen->
-                genres << ensureGenre( gen.text() )
-            }
 
             def actors = []
             movieXml.actors.children().each { act->
@@ -53,7 +45,6 @@ class LegacyImportController {
 
             def posters = []
             movieXml.posters.children().each { poster->
-                // TODO: only supports one poster right now
                 posters << new Poster( content:poster.text().decodeBase64()  )
             }
 
@@ -67,8 +58,8 @@ class LegacyImportController {
                 broadcast: Broadcast.valueOf( Broadcast, movieXml.@broadcast.text()),
             )
 
-            genres.each { gen->
-                movie.addToGenres( gen )
+            movieXml.genres.children().each { gen->
+                movie.addToGenres ensureGenre( gen.text() )
             }
 
             actors.each { act->
@@ -80,40 +71,36 @@ class LegacyImportController {
             }
 
             if( posters ){
-                movie.setPoster( posters[0] )
-            }
-
-            movie.save( flush:true )
-
-            // FIXME: need to hook into storage
-
-            /*
-            FIXME: re-implement
-            lets reconsider the storage system. Do we really need to have such a rigid model?
-            Why not just have storage with a name and number.
-            No real need to have capacity
-
-            you could still have unit names and indexs which is what we really care about
-            but a less complicated storage model set
-             */
-
-            movieXml.storage.children().each { slot->
-                def unitName = slot.@name.text()
-                def storageIndex = slot.@index.text() as Integer
-
-                def storageUnit = StorageUnit.findByName( unitName )
-                if( !storageUnit ){
-                    storageUnit = new StorageUnit( name: )
+                posters.each { poster->
+                    movie.addToPosters( poster )
                 }
             }
 
-            movieStorageService.storeMovie( unitId, movieId, index )
+            movieXml.storage.children().each { slot->
+                movie.addToStorageSlots(new StorageSlot(
+                    name:slot.@name.text(),
+                    index:(slot.@index.text() as Integer)
+                ))
+            }
+
+            movie.save( flush:true )
         }
     }
 
     private Actor ensureActor( String firstName, String middleName, String lastName ){
-        def found = Actor.findByFirstNameAndMiddleNameAndLastName( firstName, middleName, lastName )
+        def found
+
+        def actors = Actor.findAllByLastName(lastName)
+        if( actors ){
+            final String targetFullName = fullName(firstName,middleName,lastName)
+            found = actors.find { act-> act.fullName == targetFullName }
+        }
+
         found ?: new Actor( firstName:firstName, middleName:middleName, lastName:lastName )
+    }
+
+    private String fullName( String firstName, String middleName, String lastName ){
+        "${firstName ? firstName + ' ' : ''}${middleName ? middleName + ' ' : ''}$lastName" as String
     }
 
     private Genre ensureGenre( String name ){

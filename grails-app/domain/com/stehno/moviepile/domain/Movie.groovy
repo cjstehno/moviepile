@@ -24,13 +24,18 @@ class Movie {
     String title
     String description
     Integer releaseYear
-    Poster poster
     MpaaRating mpaaRating
     Format format
     Integer runtime
     Broadcast broadcast
 
-    static hasMany = [genres:Genre, actors:Actor, sites:WebSite]
+    static hasMany = [
+        genres:Genre,
+        actors:Actor,
+        sites:WebSite,
+        storageSlots:StorageSlot,
+        posters:Poster
+    ]
 
     Date dateCreated
     Date lastUpdate
@@ -39,7 +44,6 @@ class Movie {
         title blank:false, size:1..100
         description nullable:true, blank:true, maxSize:2000
         releaseYear nullable:true, range:1900..2100
-        poster nullable:true
         runtime nullable:true, min:0
 
         mpaaRating inList:MpaaRating.values() as List

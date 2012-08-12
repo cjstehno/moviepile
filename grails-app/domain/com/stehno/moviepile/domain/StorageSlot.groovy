@@ -17,22 +17,18 @@
 package com.stehno.moviepile.domain
 
 /**
- * Represents a single location in a storage unit.
+ *
  */
-class Storage {
+class StorageSlot {
 
+    String name
     Integer index
 
-    static belongsTo = [ unit:StorageUnit ]
-    static hasMany = [ movies:Movie ]
+    static belongsTo = Movie
+    static hasMany = [movies:Movie]
 
     static constraints = {
-        index nullable:true, min:1
-    }
-
-    static transients = ['storageLabel']
-
-    String getStorageLabel(){
-        "${unit.name}-$index"
+        name nullable:false, blank:false, minSize:1, maxSize:10
+        index nullable:true, min:0
     }
 }

@@ -23,6 +23,8 @@ class Poster {
 
     byte[] content
 
+    static belongsTo = Movie
+
     static constraints = {
         content maxSize:1024000
     }
