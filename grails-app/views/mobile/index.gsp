@@ -18,6 +18,7 @@
                     <li><g:link action="actor" data-transition="slide">Actors</g:link><span class="ui-li-count">${counts.actors}</span></li>
                     <li><g:link action="unit" data-transition="slide">Storage</g:link><span class="ui-li-count">${counts.units}</span></li>
                     <li><g:link action="year" data-transition="slide">Release Years</g:link><span class="ui-li-count">${counts.years}</span></li>
+                    <li><g:link action="search" data-transition="slide">Search</g:link></li>
                 </ul>
             </div>
         </div>

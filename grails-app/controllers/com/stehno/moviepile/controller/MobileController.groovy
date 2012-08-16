@@ -155,6 +155,33 @@ class MobileController {
         }
     }
 
+    def search(){
+        [:]
+    }
+
+    def searchResults(){
+        def criteria = params.criteria
+
+        def movies = Movie.search().list {
+            if(criteria){
+                should {
+                    def query = criteria.toLowerCase() + '*'
+                    wildcard 'title', query
+                    wildcard 'description', query
+                    wildcard 'releaseYear', query
+//                    wildcard 'mpaaRating', query
+//                    wildcard 'format', query
+                    wildcard 'runtime', query
+//                    wildcard 'broadcast', query
+                }
+            }
+
+            sort 'title'
+        }
+
+        render view:'movies', model:[ filter:'Search Results', movies:movies ]
+    }
+
     private int countMoviesStartingWith( String letter ){
         Movie.findAll('from Movie as m where substring(upper(m.title),1,1)=? order by m.title asc', [letter.toUpperCase()]).size()
     }

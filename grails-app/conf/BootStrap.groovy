@@ -17,10 +17,15 @@
 import com.stehno.moviepile.security.Role
 import com.stehno.moviepile.security.User
 import com.stehno.moviepile.security.UserRole
+import com.stehno.moviepile.domain.Movie
 
 class BootStrap {
 
     def init = { servletContext ->
+        // rebuild the search index
+        Movie.search().createIndexAndWait()
+
+        // bootstrap user if needed
         if( !User.findByUsername('admin') ){
             def adminRole = new Role(authority: 'ROLE_ADMIN').save(flush: true)
             new Role(authority: 'ROLE_USER').save(flush: true)

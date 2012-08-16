@@ -8,6 +8,9 @@ hibernate {
     cache.use_second_level_cache = true
     cache.use_query_cache = false
     cache.region.factory_class = 'net.sf.ehcache.hibernate.EhCacheRegionFactory'
+
+    // hibernate search configuration:
+    search.default.directory_provider = 'filesystem'
 }
 // environment specific settings
 environments {
@@ -27,7 +30,7 @@ environments {
     production {
         dataSource {
             dbCreate = "update"
-            url = "jdbc:h2:prodDb;MVCC=TRUE;LOCK_TIMEOUT=10000"
+            url = "jdbc:h2:file:/var/moviepile/moviepile;MVCC=TRUE;LOCK_TIMEOUT=10000"
             pooled = true
             properties {
                maxActive = -1
@@ -39,6 +42,9 @@ environments {
                testOnReturn=true
                validationQuery="SELECT 1"
             }
+        }
+        hibernate {
+            search.default.indexBase = '/var/moviepile'
         }
     }
 }

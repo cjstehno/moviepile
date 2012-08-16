@@ -53,6 +53,20 @@ class Movie {
         lastUpdate nullable:true
         dateCreated nullable:true
     }
+
+    static search = {
+        title index:'tokenized'
+        description index:'tokenized'
+        releaseYear index:'un_tokenized'
+        mpaaRating index:'un_tokenized'
+        format index:'un_tokenized'
+        runtime index:'un_tokenized'
+        broadcast index:'un_tokenized'
+
+        genres indexEmbedded:[ depth:2 ]
+        actors indexEmbedded:[ depth:2 ]
+        sites indexEmbedded:[ depth:2 ]
+    }
 }
 
 /**
