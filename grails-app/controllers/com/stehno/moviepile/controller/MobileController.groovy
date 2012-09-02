@@ -21,47 +21,57 @@ import com.stehno.moviepile.domain.Genre
 import com.stehno.moviepile.domain.Movie
 import com.stehno.moviepile.domain.Poster
 import com.stehno.moviepile.domain.StorageSlot
+import com.stehno.moviepile.MovieService
 
 /**
- *
+ *  Entry point for the mobile interface.
  */
 class MobileController {
 
     private static final def DEFAULT_POSTER = '/images/nocover.jpg'
 
+    MovieService movieService
+
+    /**
+     * Renders the main entry point, the index page with its appropriate data.
+     *
+     * @return the populated model object
+     */
     def index(){
-        // FIXME: move these to service?
-
-        def movieYears = Movie.executeQuery('select distinct(m.releaseYear) from Movie m order by m.releaseYear asc')
-
-        // FIXME: need to account for a and the
-        def movieTitleLetters = Movie.executeQuery('select distinct(substring(upper(m.title),1,1)) from Movie m').sort()
-
-
-        int unitCount = StorageSlot.executeQuery('select distinct(name) from StorageSlot').size()
+        // FIXME: service?
+        int unitCount = StorageSlot.withCriteria {
+            projections {
+                countDistinct 'name'
+            }
+        }[0]
 
         [
             counts:[
-                titles: movieTitleLetters.size(),
+                titles: movieService.listValidTitleLetters().size(),
                 genres: Genre.count(),
                 actors: Actor.count(),
-                years: movieYears.size(),
+                years: movieService.listValidReleaseYears().size(),
                 units: unitCount
             ]
         ]
     }
 
+    /**
+     * Renders either a list of valid title letters or a list of movies for a specified title letter.
+     */
     def letter(){
         def selectedLetter = params.id
         if( selectedLetter ){
-            def movies = Movie.findAll('from Movie as m where substring(upper(m.title),1,1)=? order by m.title asc', [selectedLetter.toUpperCase()])
-
+            def movies = movieService.listMoviesWithTitleLetter(selectedLetter)
             render view:'movies', model:[ filter:params.id, movies:movies ]
 
         } else {
-            def movieTitleLetters = Movie.executeQuery('select distinct(substring(upper(m.title),1,1)) from Movie m').sort()
+            def movieTitleLetters = movieService.listValidTitleLetters()
+
+            // TODO: investigate adding counts to this list query, rather than as separate
+
             renderFilters 'Titles', 'letter', movieTitleLetters.collect { letter->
-                [ id:letter, label:letter, count:countMoviesStartingWith(letter) ]
+                [ id:letter, label:letter, count:movieService.countMoviesWithTitleLetter(letter) ]
             }
         }
     }
@@ -86,6 +96,7 @@ class MobileController {
     def actorLetter(){
         def selectedLetter = params.id
         if( selectedLetter ){
+            // FIXME: service?
             def actors = Actor.findAll('from Actor as a where substring(upper(a.lastName),1,1)=? order by a.lastName asc', [selectedLetter.toUpperCase()])
 
             renderFilters "$selectedLetter Actors", 'actor', actors.collect { act->
@@ -135,23 +146,18 @@ class MobileController {
     def year(){
         if( params.id){
             def movies = Movie.findAllByReleaseYear(params.id as Integer, [sort:'title'])
-
             render view:'movies', model:[ filter:params.id, movies:movies ]
 
         } else {
-            def years = Movie.executeQuery('select distinct(m.releaseYear) from Movie m order by m.releaseYear asc').collect { y->
-                [ id:y, label:y, count:Movie.findAllByReleaseYear(y).size() ]
+            renderFilters 'Release Years', 'year', movieService.listValidReleaseYears().collect { y->
+                [ id:y, label:y, count:Movie.countByReleaseYear(y) ]
             }
-
-            renderFilters 'Release Years', 'year', years
         }
     }
 
     def movie(){
-        def movieId = params.id
-
         [
-            movie:Movie.get(movieId as Long)
+            movie:Movie.get(params.id as Long)
         ]
     }
 
@@ -164,39 +170,36 @@ class MobileController {
         }
     }
 
-    def search(){
-        [:]
-    }
-
-    def searchResults(){
-        def criteria = params.criteria
-
-        def movies = Movie.search().list {
-            if(criteria){
-                should {
-                    def query = criteria.toLowerCase() + '*'
-                    wildcard 'title', query
-                    wildcard 'description', query
-                    wildcard 'releaseYear', query
-//                    wildcard 'mpaaRating', query
-//                    wildcard 'format', query
-                    wildcard 'runtime', query
-//                    wildcard 'broadcast', query
-                }
-            }
-
-            sort 'title'
-        }
-
-        render view:'movies', model:[ filter:'Search Results', movies:movies ]
-    }
+    // FIXME: re-implement search functionality
+//    def search(){
+//        [:]
+//    }
+//
+//    def searchResults(){
+//        def criteria = params.criteria
+//
+//        def movies = Movie.search().list {
+//            if(criteria){
+//                should {
+//                    def query = criteria.toLowerCase() + '*'
+//                    wildcard 'title', query
+//                    wildcard 'description', query
+//                    wildcard 'releaseYear', query
+////                    wildcard 'mpaaRating', query
+////                    wildcard 'format', query
+//                    wildcard 'runtime', query
+////                    wildcard 'broadcast', query
+//                }
+//            }
+//
+//            sort 'title'
+//        }
+//
+//        render view:'movies', model:[ filter:'Search Results', movies:movies ]
+//    }
 
     private int countActorsStartingWith( String letter ){
         Actor.findAll('from Actor as a where substring(upper(a.lastName),1,1)=? order by a.lastName asc', [letter.toUpperCase()]).size()
-    }
-
-    private int countMoviesStartingWith( String letter ){
-        Movie.findAll('from Movie as m where substring(upper(m.title),1,1)=? order by m.title asc', [letter.toUpperCase()]).size()
     }
 
     private void renderFilters( String name, String action, List items ){

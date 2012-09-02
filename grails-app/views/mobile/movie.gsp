@@ -46,14 +46,14 @@
 
                 <h3>Genres</h3>
                 <ul data-role="listview" data-inset="true">
-                    <g:each in="${movie.genres}" var="genre">
+                    <g:each in="${movie.genres.sort{ it.name }}" var="genre">
                         <li><g:link action="genre" id="${genre.id}" data-transition="slide">${genre.name}</g:link></li>
                     </g:each>
                 </ul>
 
                 <h3>Actors</h3>
                 <ul data-role="listview" data-inset="true">
-                    <g:each in="${movie.actors}" var="actor">
+                    <g:each in="${movie.actors.sort{ it.lastName }}" var="actor">
                         <li><g:link action="actor" id="${actor.id}" data-transition="slide">${actor.displayName}</g:link></li>
                     </g:each>
                 </ul>
