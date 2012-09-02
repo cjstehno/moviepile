@@ -15,10 +15,10 @@
                 <ul data-role="listview" data-filter="true">
                     <li><g:link action="letter" data-transition="slide">Titles</g:link><span class="ui-li-count">${counts.titles}</span></li>
                     <li><g:link action="genre" data-transition="slide">Genres</g:link><span class="ui-li-count">${counts.genres}</span></li>
-                    <li><g:link action="actor" data-transition="slide">Actors</g:link><span class="ui-li-count">${counts.actors}</span></li>
+                    <li><g:link action="actorLetter" data-transition="slide">Actors</g:link><span class="ui-li-count">${counts.actors}</span></li>
                     <li><g:link action="unit" data-transition="slide">Storage</g:link><span class="ui-li-count">${counts.units}</span></li>
                     <li><g:link action="year" data-transition="slide">Release Years</g:link><span class="ui-li-count">${counts.years}</span></li>
-                    <li><g:link action="search" data-transition="slide">Search</g:link></li>
+                    %{--<li><g:link action="search" data-transition="slide">Search</g:link></li>--}%
                 </ul>
             </div>
         </div>

@@ -83,19 +83,28 @@ class MobileController {
         }
     }
 
-    def actor(){
-        if( params.id ){
-            def actor = Actor.get(params.id)
-            def movies = (actor.movies as List).sort { it.title }
-            render view:'movies', model:[ filter:actor.displayName, movies:movies ]
+    def actorLetter(){
+        def selectedLetter = params.id
+        if( selectedLetter ){
+            def actors = Actor.findAll('from Actor as a where substring(upper(a.lastName),1,1)=? order by a.lastName asc', [selectedLetter.toUpperCase()])
 
-        } else {
-            def actors = Actor.list().sort { it.displayName }
-
-            renderFilters 'Actors', 'actor', actors.collect { act->
+            renderFilters "$selectedLetter Actors", 'actor', actors.collect { act->
                 [ id:act.id, label:act.displayName, count:act.movies.size() ]
             }
+
+        } else {
+            def actorLetters = Actor.executeQuery('select distinct(substring(upper(a.lastName),1,1)) from Actor a').sort()
+
+            renderFilters 'Actors', 'actorLetter', actorLetters.collect { letter->
+                [ id:letter, label:letter, count:countActorsStartingWith(letter) ]
+            }
         }
+    }
+
+    def actor(){
+        def actor = Actor.get(params.id)
+        def movies = (actor.movies as List).sort { it.title }
+        render view:'movies', model:[ filter:actor.displayName, movies:movies ]
     }
 
     def unit(){
@@ -180,6 +189,10 @@ class MobileController {
         }
 
         render view:'movies', model:[ filter:'Search Results', movies:movies ]
+    }
+
+    private int countActorsStartingWith( String letter ){
+        Actor.findAll('from Actor as a where substring(upper(a.lastName),1,1)=? order by a.lastName asc', [letter.toUpperCase()]).size()
     }
 
     private int countMoviesStartingWith( String letter ){

@@ -7,9 +7,9 @@ class UrlMappings {
 			}
 		}
 
-        '/mobile/search'(controller:'mobile'){
-            action = [ GET:'search', POST:'searchResults' ]
-        }
+//        '/mobile/search'(controller:'mobile'){
+//            action = [ GET:'search', POST:'searchResults' ]
+//        }
 
 		"/"(view:"/index")
 		"500"(view:'/error')

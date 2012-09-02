@@ -23,7 +23,7 @@ class BootStrap {
 
     def init = { servletContext ->
         // rebuild the search index
-        Movie.search().createIndexAndWait()
+//        Movie.search().createIndexAndWait()
 
         // bootstrap user if needed
         if( !User.findByUsername('admin') ){
