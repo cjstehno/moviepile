@@ -16,12 +16,10 @@
 
 package com.stehno.moviepile.controller
 
-import com.stehno.moviepile.domain.Actor
-import com.stehno.moviepile.domain.Genre
-import com.stehno.moviepile.domain.Movie
-import com.stehno.moviepile.domain.Poster
-import com.stehno.moviepile.domain.StorageSlot
+import com.stehno.moviepile.ActorService
 import com.stehno.moviepile.MovieService
+import com.stehno.moviepile.domain.*
+import grails.web.RequestParameter
 
 /**
  *  Entry point for the mobile interface.
@@ -31,6 +29,7 @@ class MobileController {
     private static final def DEFAULT_POSTER = '/images/nocover.jpg'
 
     MovieService movieService
+    ActorService actorService
 
     /**
      * Renders the main entry point, the index page with its appropriate data.
@@ -93,29 +92,24 @@ class MobileController {
         }
     }
 
-    def actorLetter(){
-        def selectedLetter = params.id
+    def actorLetter( @RequestParameter('id') String selectedLetter ){
         if( selectedLetter ){
-            // FIXME: service?
-            def actors = Actor.findAll('from Actor as a where substring(upper(a.lastName),1,1)=? order by a.lastName asc', [selectedLetter.toUpperCase()])
-
+            def actors = actorService.listActorsWithNameLetter(selectedLetter)
             renderFilters "$selectedLetter Actors", 'actor', actors.collect { act->
                 [ id:act.id, label:act.displayName, count:act.movies.size() ]
             }
 
         } else {
-            def actorLetters = Actor.executeQuery('select distinct(substring(upper(a.lastName),1,1)) from Actor a').sort()
-
-            renderFilters 'Actors', 'actorLetter', actorLetters.collect { letter->
-                [ id:letter, label:letter, count:countActorsStartingWith(letter) ]
+            def lettersAndCounts = actorService.listAndCountValidActorNameLetters()
+            renderFilters 'Actors', 'actorLetter', lettersAndCounts.collect { letter, count->
+                [ id:letter, label:letter, count:count ]
             }
         }
     }
 
     def actor(){
         def actor = Actor.get(params.id)
-        def movies = (actor.movies as List).sort { it.title }
-        render view:'movies', model:[ filter:actor.displayName, movies:movies ]
+        render view:'movies', model:[ filter:actor.displayName, movies:(actor.movies as List).sort { it.title } ]
     }
 
     def unit(){
@@ -197,10 +191,6 @@ class MobileController {
 //
 //        render view:'movies', model:[ filter:'Search Results', movies:movies ]
 //    }
-
-    private int countActorsStartingWith( String letter ){
-        Actor.findAll('from Actor as a where substring(upper(a.lastName),1,1)=? order by a.lastName asc', [letter.toUpperCase()]).size()
-    }
 
     private void renderFilters( String name, String action, List items ){
         render view:'filters', model:[ filter:name, filterAction:action, items:items ]

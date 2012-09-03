@@ -94,3 +94,5 @@ log4j = {
 grails.plugins.springsecurity.userLookup.userDomainClassName = 'com.stehno.moviepile.security.User'
 grails.plugins.springsecurity.userLookup.authorityJoinClassName = 'com.stehno.moviepile.security.UserRole'
 grails.plugins.springsecurity.authority.className = 'com.stehno.moviepile.security.Role'
+
+grails.cache.clearAtStartup  = true

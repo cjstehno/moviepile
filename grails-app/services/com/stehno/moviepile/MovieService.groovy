@@ -37,7 +37,7 @@ class MovieService {
                 distinct 'releaseYear'
             }
             order('releaseYear', 'asc')
-        }
+        } as List<Movie>
     }
 
     /**
@@ -88,9 +88,11 @@ class MovieService {
     }
 
     /**
+     * Counts the number of movies with the given letter as the first in the "useful title", which ignores words like
+     * The, An, etc.
      *
-     * @param letter
-     * @return
+     * @param letter the letter (case insensitive)
+     * @return the count
      */
     int countMoviesWithTitleLetter( final String letter ){
         def movies = Movie.withCriteria {

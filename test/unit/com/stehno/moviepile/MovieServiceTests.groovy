@@ -5,12 +5,11 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 import org.junit.Test
 
-/**
- * See the API for {@link grails.test.mixin.services.ServiceUnitTestMixin} for usage instructions
- */
 @TestFor(MovieService)
 @Mock(Movie)
 class MovieServiceTests {
+
+    @Delegate private DomainHelper domainHelper = new DomainHelper()
 
     @Test
     void 'listValidReleaseYears with a duplicate'(){
@@ -95,11 +94,5 @@ class MovieServiceTests {
         ])
 
         assertEquals 2, service.countMoviesWithTitleLetter( 'T' )
-    }
-
-    private void provideMovies( protos ){
-        protos.each {
-            new Movie( it ).save(validate:false)
-        }
     }
 }
